@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Merlin — API Integration Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #f7f4ee;
+  --ink: #1c1a16;
+  --muted: #7a7468;
+  --border: #e0d9ce;
+  --surface: #ffffff;
+  --accent: #b8522a;
+  --gold: #e8b84a;
+
+  --green: #2a6b30; --green-bg: #e8f4e9; --green-bd: #90c898;
+  --red: #a02828; --red-bg: #fceaea; --red-bd: #e08888;
+  --amber: #925f10; --amber-bg: #fdf3e0; --amber-bd: #e0b96a;
+  --blue: #1a5fa0; --blue-bg: #e6f0fb; --blue-bd: #90b8e0;
+  --teal: #1d7a66; --teal-bg: #e6f4f0; --teal-bd: #9ecfc3;
+  --purple: #5a3fa0; --purple-bg: #eeebf8; --purple-bd: #bdb0e0;
+  --coral: #b8390a; --coral-bg: #fdeee8; --coral-bd: #e89070;
+  --slate: #3d4a5c; --slate-bg: #eaecf0; --slate-bd: #b0b8c8;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--ink); font-family: 'Geist Mono', monospace; font-size: 13px; line-height: 1.6; }
+
+/* HEADER */
+.page-header { background: var(--ink); padding: 48px 56px 40px; position: relative; overflow: hidden; }
+.page-header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--gold), var(--teal)); }
+.header-top { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 24px; }
+.brand { font-family: 'Instrument Serif', serif; font-size: 52px; font-weight: 400; color: #f5f0e8; letter-spacing: -0.02em; line-height: 1; }
+.brand em { font-style: italic; color: var(--gold); }
+.eyebrow { font-size: 10px; color: #5a5448; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 10px; }
+.sub-line { font-size: 11px; color: #5a5448; margin-top: 10px; letter-spacing: 0.06em; }
+.doc-meta { display: flex; flex-direction: column; gap: 6px; align-self: flex-end; text-align: right; }
+.meta-badge { display: inline-block; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; padding: 3px 10px; border-radius: 2px; }
+.mb-version { background: var(--accent); color: #fff; }
+.mb-conf { background: #3a3830; color: #7a7060; border: 1px solid #3a3830; }
+
+/* EXECUTIVE SUMMARY */
+.exec-summary { background: linear-gradient(135deg, #26231e 0%, #1c1a16 100%); padding: 40px 56px; border-bottom: 1px solid #3a3830; }
+.es-title { font-family: 'Instrument Serif', serif; font-size: 22px; color: #f5f0e8; margin-bottom: 16px; }
+.es-body { font-size: 11.5px; color: #8a847a; line-height: 1.75; max-width: 900px; }
+.es-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 24px; }
+.es-card { background: #2e2c28; border: 1px solid #3a3830; border-radius: 6px; padding: 16px; }
+.es-card .esk { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: #5a5448; margin-bottom: 6px; }
+.es-card .esv { font-family: 'Instrument Serif', serif; font-size: 22px; color: #f5f0e8; margin-bottom: 4px; }
+.es-card .esl { font-size: 10px; color: #5a5448; }
+
+/* LAYOUT */
+.page-body { display: flex; }
+.sidebar { width: 230px; min-width: 230px; background: var(--ink); padding: 28px 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; border-right: 1px solid #2e2c28; }
+.sb-section { padding: 0 18px 20px; }
+.sb-label { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: #3a3830; font-weight: 600; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #2e2c28; }
+.sb-item { display: block; padding: 6px 8px; border-radius: 3px; font-size: 10px; color: #7a7060; letter-spacing: 0.04em; text-decoration: none; margin-bottom: 2px; transition: all 0.15s; border: 1px solid transparent; }
+.sb-item:hover, .sb-item.active { color: #f5f0e8; background: #26231e; border-color: #3a3830; }
+.sb-dot { display: inline-block; width: 6px; height: 6px; border-radius: 1px; margin-right: 6px; }
+
+.content { flex: 1; padding: 48px 56px 80px; max-width: 1100px; }
+
+/* API BLOCK */
+.api-section { margin-bottom: 56px; scroll-margin-top: 32px; }
+.api-header { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 2px solid var(--border); }
+.api-num { font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); min-width: 36px; padding-top: 8px; }
+.api-title-block { flex: 1; }
+.api-name { font-family: 'Instrument Serif', serif; font-size: 30px; font-weight: 400; letter-spacing: -0.01em; }
+.api-name em { font-style: italic; }
+.api-desc { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 3px; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; border: 1.5px solid; white-space: nowrap; flex-shrink: 0; margin-top: 6px; }
+.sp-available { background: var(--green-bg); border-color: var(--green-bd); color: var(--green); }
+.sp-partial { background: var(--amber-bg); border-color: var(--amber-bd); color: var(--amber); }
+.sp-noapi { background: var(--red-bg); border-color: var(--red-bd); color: var(--red); }
+.sp-custom { background: var(--blue-bg); border-color: var(--blue-bd); color: var(--blue); }
+
+/* CAPABILITY TABLE */
+.cap-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+.cap-table th { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; padding: 8px 12px; text-align: left; border-bottom: 2px solid var(--border); color: var(--muted); }
+.cap-table td { font-size: 11px; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.5; }
+.cap-table tr:hover td { background: rgba(0,0,0,0.02); }
+.cap-col-feat { width: 28%; font-weight: 600; }
+.cap-col-avail { width: 15%; }
+.cap-col-how { width: 35%; }
+.cap-col-limit { width: 22%; }
+
+.tick { color: var(--green); font-size: 13px; }
+.cross { color: var(--red); font-size: 13px; }
+.partial { color: var(--amber); font-size: 13px; }
+
+/* INFO CARDS */
+.info-row { display: grid; gap: 12px; margin: 16px 0; }
+.ir-2 { grid-template-columns: 1fr 1fr; }
+.ir-3 { grid-template-columns: 1fr 1fr 1fr; }
+.info-card { border-radius: 8px; border: 1.5px solid; padding: 16px 16px; }
+.info-card .ic-label { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; opacity: 0.75; }
+.info-card .ic-title { font-family: 'Instrument Serif', serif; font-size: 16px; margin-bottom: 6px; }
+.info-card .ic-body { font-size: 11px; line-height: 1.6; opacity: 0.75; }
+.info-card ul { list-style: none; padding: 0; margin-top: 6px; }
+.info-card ul li { font-size: 10.5px; opacity: 0.72; padding: 3px 0 3px 14px; position: relative; line-height: 1.5; }
+.info-card ul li::before { content: '→'; position: absolute; left: 0; opacity: 0.5; }
+
+.ic-green  { background: var(--green-bg);  border-color: var(--green-bd);  color: var(--green);  }
+.ic-red    { background: var(--red-bg);    border-color: var(--red-bd);    color: var(--red);    }
+.ic-amber  { background: var(--amber-bg);  border-color: var(--amber-bd);  color: var(--amber);  }
+.ic-blue   { background: var(--blue-bg);   border-color: var(--blue-bd);   color: var(--blue);   }
+.ic-teal   { background: var(--teal-bg);   border-color: var(--teal-bd);   color: var(--teal);   }
+.ic-slate  { background: var(--slate-bg);  border-color: var(--slate-bd);  color: var(--slate);  }
+.ic-coral  { background: var(--coral-bg);  border-color: var(--coral-bd);  color: var(--coral);  }
+.ic-purple { background: var(--purple-bg); border-color: var(--purple-bd); color: var(--purple); }
+
+/* CRED BOX */
+.cred-box { background: #1c1a16; border: 1px solid #3a3830; border-radius: 6px; padding: 14px 18px; margin-top: 12px; }
+.cred-box .cb-title { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: #5a5448; margin-bottom: 10px; }
+.cred-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.cred-chip { font-size: 10px; padding: 3px 10px; border-radius: 3px; background: #26231e; border: 1px solid #3a3830; color: #8a847a; }
+.cred-chip.required { border-color: var(--amber-bd); color: var(--amber); background: #3a2800; }
+
+/* WORKAROUND BOX */
+.workaround { background: var(--amber-bg); border: 1.5px solid var(--amber-bd); border-radius: 6px; padding: 14px 18px; margin-top: 12px; }
+.workaround .wt { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; color: var(--amber); margin-bottom: 6px; }
+.workaround .wb { font-size: 11px; color: var(--amber); line-height: 1.6; }
+
+/* LIMITATION BOX */
+.limit-box { background: var(--red-bg); border: 1.5px solid var(--red-bd); border-radius: 6px; padding: 14px 18px; margin-top: 12px; }
+.limit-box .lt { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; color: var(--red); margin-bottom: 8px; }
+.limit-box ul { list-style: none; padding: 0; }
+.limit-box ul li { font-size: 11px; color: var(--red); opacity: 0.85; padding: 2px 0 2px 14px; position: relative; }
+.limit-box ul li::before { content: '✕'; position: absolute; left: 0; opacity: 0.6; }
+
+/* AVAILABLE BOX */
+.avail-box { background: var(--green-bg); border: 1.5px solid var(--green-bd); border-radius: 6px; padding: 14px 18px; margin-top: 12px; }
+.avail-box .at { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; color: var(--green); margin-bottom: 8px; }
+.avail-box ul { list-style: none; padding: 0; }
+.avail-box ul li { font-size: 11px; color: var(--green); opacity: 0.85; padding: 2px 0 2px 14px; position: relative; }
+.avail-box ul li::before { content: '✓'; position: absolute; left: 0; opacity: 0.7; }
+
+/* DIVIDER */
+.divider { width: 100%; border: none; border-top: 1px solid var(--border); margin: 4px 0 40px; }
+
+/* SUMMARY TABLE */
+.summary-table { width: 100%; border-collapse: collapse; }
+.summary-table th { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; padding: 10px 14px; text-align: left; background: var(--ink); color: #7a7060; }
+.summary-table td { font-size: 11px; padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.summary-table tr:nth-child(even) td { background: rgba(0,0,0,0.025); }
+
+/* FOOTER */
+.page-footer { background: var(--ink); padding: 20px 56px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-top: 2px solid var(--accent); }
+.footer-brand { font-family: 'Instrument Serif', serif; font-size: 22px; color: #f5f0e8; }
+.footer-brand em { font-style: italic; color: var(--gold); }
+.footer-meta { font-size: 10px; color: #5a5448; letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* PRINT */
+@media print { .sidebar { display: none; } .content { padding: 24px; } }
+
+/* scrollbar */
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-thumb { background: #3a3830; border-radius: 2px; }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.api-section { animation: fadeUp 0.4s both; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="page-header">
+  <div class="header-top">
+    <div>
+      <div class="eyebrow">Integration Technical Report · ERPNext v16 · Frappe Framework</div>
+      <div class="brand">Merlin<em>.</em> API Connector Report</div>
+      <div class="sub-line">Stainless Steel Vessel Bottles · eCommerce + Logistics Integration Layer · 16 May 2025 · Prepared for Client Review</div>
+    </div>
+    <div class="doc-meta">
+      <span class="meta-badge mb-version">v1.0 — Client Facing</span>
+      <span class="meta-badge mb-conf" style="margin-top:4px;">Confidential</span>
+      <div style="font-size:10px;color:#3a3830;margin-top:8px;">Covering 6 Channels + 2 Logistics APIs</div>
+    </div>
+  </div>
+</header>
+
+<!-- EXEC SUMMARY -->
+<div class="exec-summary">
+  <div class="es-title">Executive Summary — API Availability Assessment</div>
+  <div class="es-body">
+    This report documents the API connector research for the Merlin ERPNext v16 implementation covering three critical integration requirements: <strong style="color:#f5f0e8;">Auto Order Sync</strong> (orders flowing from eCommerce platforms into ERPNext as Sales Orders automatically), <strong style="color:#f5f0e8;">Live Inventory Sync</strong> (real-time stock balance push from ERPNext to all platforms), and <strong style="color:#f5f0e8;">Auto Logistics Partner Allocation</strong> (pincode-based courier assignment on Delivery Note creation). Based on research of official documentation from Frappe, Amazon, Flipkart, Shopify, Fynd/Konnect, Clickpost, and platform-specific sources, we have identified which integrations are natively available, which require middleware, and which have no public API and need custom/manual solutions.
+  </div>
+  <div class="es-grid">
+    <div class="es-card">
+      <div class="esk">Fully Available API</div>
+      <div class="esv" style="color:#6abf74;">3</div>
+      <div class="esl">Amazon SP-API, Shopify, Clickpost — native ERPNext or documented REST</div>
+    </div>
+    <div class="es-card">
+      <div class="esk">Via Middleware Only</div>
+      <div class="esv" style="color:#e8b84a;">2</div>
+      <div class="esl">Flipkart, Meesho — API exists but requires Unicommerce / Vinculum layer</div>
+    </div>
+    <div class="es-card">
+      <div class="esk">No Public Seller API</div>
+      <div class="esv" style="color:#e08888;">2</div>
+      <div class="esl">Zepto & Blinkit — PO via email / seller portal; no direct ERP integration available</div>
+    </div>
+    <div class="es-card">
+      <div class="esk">Custom Build Required</div>
+      <div class="esv" style="color:#90b8e0;">1</div>
+      <div class="esl">Pincode-to-WH routing logic — ERPNext custom script, no out-of-box module</div>
+    </div>
+  </div>
+</div>
+
+<!-- BODY -->
+<div class="page-body">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sb-section">
+      <div class="sb-label">Order Sync APIs</div>
+      <a class="sb-item active" href="#api01">01 · Amazon SP-API</a>
+      <a class="sb-item" href="#api02">02 · Shopify</a>
+      <a class="sb-item" href="#api03">03 · Flipkart Seller API</a>
+      <a class="sb-item" href="#api04">04 · Meesho</a>
+      <a class="sb-item" href="#api05">05 · Zepto</a>
+      <a class="sb-item" href="#api06">06 · Blinkit</a>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label">Logistics APIs</div>
+      <a class="sb-item" href="#api07">07 · Clickpost</a>
+      <a class="sb-item" href="#api08">08 · Shiprocket</a>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label">Middleware</div>
+      <a class="sb-item" href="#api09">09 · Unicommerce</a>
+      <a class="sb-item" href="#api10">10 · Fynd / Konnect</a>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label">Custom Logic</div>
+      <a class="sb-item" href="#api11">11 · Pincode → WH Routing</a>
+      <a class="sb-item" href="#api12">12 · Live Inventory Push</a>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label">Summary</div>
+      <a class="sb-item" href="#summary">Summary Matrix</a>
+    </div>
+  </nav>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- ══ AMAZON SP-API ══ -->
+    <section class="api-section" id="api01">
+      <div class="api-header">
+        <span class="api-num">01</span>
+        <div class="api-title-block">
+          <div class="api-name">Amazon <em>SP-API</em></div>
+          <div class="api-desc">Selling Partner API — Native ERPNext Integration via Frappe App · ecommerce_integrations</div>
+        </div>
+        <span class="status-pill sp-available">✓ Available — Native</span>
+      </div>
+
+      <div class="info-row ir-3">
+        <div class="info-card ic-green">
+          <div class="ic-label">Integration Type</div>
+          <div class="ic-title">Native Frappe App</div>
+          <div class="ic-body">Official ERPNext Amazon connector moved out of core into a dedicated Frappe App. Available on Frappe Cloud Marketplace and via bench install.</div>
+        </div>
+        <div class="info-card ic-green">
+          <div class="ic-label">Installation</div>
+          <div class="ic-title">Frappe Cloud / Self-Host</div>
+          <div class="ic-body">Frappe Cloud: install from Marketplace dashboard. Self-hosted: <code>bench get-app ecommerce_integrations</code>. GitHub: frappe/ecommerce_integrations</div>
+        </div>
+        <div class="info-card ic-amber">
+          <div class="ic-label">API Version Status</div>
+          <div class="ic-title">MWS Deprecated</div>
+          <div class="ic-body">Amazon shut down legacy MWS endpoints on March 31, 2024. All integrations now must run on SP-API. Ensure the Frappe app version supports SP-API (not old MWS).</div>
+        </div>
+      </div>
+
+      <table class="cap-table">
+        <thead>
+          <tr>
+            <th class="cap-col-feat">Capability</th>
+            <th class="cap-col-avail">Available?</th>
+            <th class="cap-col-how">How It Works</th>
+            <th class="cap-col-limit">Limitation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cap-col-feat">Auto Order Sync (SO creation)</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>Amazon orders pulled via SP-API → ERPNext SO auto-created. Scheduled sync + manual trigger available.</td>
+            <td>Products must be synced before Orders. Sequential sync required.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Product / Catalog Sync</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>Pull product listings from Amazon into ERPNext Item Master. Sync products first, then orders.</td>
+            <td>One-directional pull only by default. Catalog push requires custom logic.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Inventory Push to Amazon</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>SP-API Inventory Feed — push available stock qty to Amazon. Scheduler-driven or webhook-triggered.</td>
+            <td>Rate limits apply on SP-API Inventory endpoint. Safety stock buffer must be managed manually.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Customer Data Import</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>Customer name, address, tax data pulled from Amazon orders into ERPNext Customer master.</td>
+            <td>Amazon masks customer email in many regions. PII limitations apply.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Order Status Update</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>Shipment confirmation and tracking numbers can be pushed back to Amazon via SP-API.</td>
+            <td>Requires AWB to be available before confirmation push.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Returns / Refund Sync</td>
+            <td class="cap-col-avail"><span class="partial">~</span></td>
+            <td>Return orders visible in SP-API. Partially supported in Frappe app. May need custom handling for Credit Note automation.</td>
+            <td>Return auto-matching to Sales Return DocType may need custom script.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Commission / Fee Reconciliation</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>Account Group in ERPNext holds commissions, taxes, Amazon fees. Configured during setup.</td>
+            <td>Settlement reconciliation is report-based, not real-time auto-reconciliation.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="cred-box">
+        <div class="cb-title">Credentials Required from Merlin / Amazon Seller Central</div>
+        <div class="cred-row">
+          <span class="cred-chip required">IAM ARN</span>
+          <span class="cred-chip required">Refresh Token</span>
+          <span class="cred-chip required">Client ID</span>
+          <span class="cred-chip required">Client Secret</span>
+          <span class="cred-chip required">AWS Access Key</span>
+          <span class="cred-chip required">AWS Secret Key</span>
+          <span class="cred-chip required">Country / Marketplace</span>
+        </div>
+        <div style="font-size:10px;color:#5a5448;margin-top:8px;">Action: Merlin to register as Amazon SP-API Developer via Amazon Seller Central → generate credentials → share with ERP team.</div>
+      </div>
+
+      <div class="limit-box" style="margin-top:12px;">
+        <div class="lt">Known Limitations</div>
+        <ul>
+          <li>MWS-era integrations are now broken — must verify the installed Frappe app uses SP-API not MWS.</li>
+          <li>SP-API has per-endpoint rate limits (e.g. Orders API: 0.0167 req/sec). Large volume imports need throttling logic.</li>
+          <li>Amazon FBA orders have different fulfillment flow — stock is at Amazon's warehouse, not Merlin's. FBA vs FBM must be clearly separated in ERPNext.</li>
+          <li>Amazon India (IN marketplace) requires separate SP-API app registration.</li>
+        </ul>
+      </div>
+    </section>
+    <hr class="divider"/>
+
+    <!-- ══ SHOPIFY ══ -->
+    <section class="api-section" id="api02">
+      <div class="api-header">
+        <span class="api-num">02</span>
+        <div class="api-title-block">
+          <div class="api-name">Shopify <em>Integration</em></div>
+          <div class="api-desc">Shopify Admin API + Webhook — Native ERPNext Integration via Frappe App</div>
+        </div>
+        <span class="status-pill sp-available">✓ Available — Native</span>
+      </div>
+
+      <div class="info-row ir-3">
+        <div class="info-card ic-green">
+          <div class="ic-label">Integration Type</div>
+          <div class="ic-title">Native Frappe App</div>
+          <div class="ic-body">Shopify integration is part of the ecommerce_integrations Frappe App. Same package as Amazon. Documented at docs.frappe.io/erpnext/shopify_integration.</div>
+        </div>
+        <div class="info-card ic-green">
+          <div class="ic-label">Sync Method</div>
+          <div class="ic-title">Webhooks + Scheduler</div>
+          <div class="ic-body">Shopify sends webhooks to ERPNext on new orders, cancellations, and refunds. Scheduler handles periodic reconciliation. Near real-time order flow.</div>
+        </div>
+        <div class="info-card ic-green">
+          <div class="ic-label">Inventory Push</div>
+          <div class="ic-title">Shopify Inventory Levels API</div>
+          <div class="ic-body">ERPNext pushes stock qty to Shopify via Inventory Levels API on each stock update. Location-aware inventory supported for multi-location Shopify stores.</div>
+        </div>
+      </div>
+
+      <table class="cap-table">
+        <thead>
+          <tr>
+            <th class="cap-col-feat">Capability</th>
+            <th class="cap-col-avail">Available?</th>
+            <th class="cap-col-how">How It Works</th>
+            <th class="cap-col-limit">Limitation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cap-col-feat">Auto Order Sync</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>Shopify Order webhook fires → ERPNext creates SO automatically. Channel tagged as Shopify.</td>
+            <td>Webhook reliability depends on server uptime; missed webhooks need scheduled fallback.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Product Sync (bi-directional)</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>Items synced between ERPNext Item Master and Shopify Product catalog. Variants supported.</td>
+            <td>Custom metafields on Shopify require additional mapping setup.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Live Inventory Push</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>On stock ledger update in ERPNext → Shopify Inventory Levels API updated. Configurable by location.</td>
+            <td>Shopify API rate limit: 2 requests/sec (standard) or 4/sec (Shopify Plus).</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Refund / Cancellation Sync</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>Shopify refund webhooks trigger Credit Note in ERPNext. Cancellation removes SO or marks cancelled.</td>
+            <td>Partial refunds need testing — mapping to ERPNext Credit Note line items can be tricky.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Customer Sync</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>Shopify customer profile pulled into ERPNext Customer master. Email-based deduplication.</td>
+            <td>Guest checkouts create anonymous customers — may bloat Customer list.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="cred-box">
+        <div class="cb-title">Credentials Required</div>
+        <div class="cred-row">
+          <span class="cred-chip required">Shopify Store URL</span>
+          <span class="cred-chip required">API Key</span>
+          <span class="cred-chip required">API Password / Access Token</span>
+          <span class="cred-chip required">Webhook Secret</span>
+        </div>
+        <div style="font-size:10px;color:#5a5448;margin-top:8px;">Action: Merlin to create a Private App in Shopify Admin → share credentials with ERP team. Ensure webhook endpoint is whitelisted.</div>
+      </div>
+    </section>
+    <hr class="divider"/>
+
+    <!-- ══ FLIPKART ══ -->
+    <section class="api-section" id="api03">
+      <div class="api-header">
+        <span class="api-num">03</span>
+        <div class="api-title-block">
+          <div class="api-name">Flipkart <em>Seller API v3.0</em></div>
+          <div class="api-desc">Flipkart Marketplace Seller API — Documented REST · No Native ERPNext Connector · Middleware Required</div>
+        </div>
+        <span class="status-pill sp-partial">~ Via Middleware</span>
+      </div>
+
+      <div class="info-row ir-3">
+        <div class="info-card ic-amber">
+          <div class="ic-label">API Status</div>
+          <div class="ic-title">Public API — Exists</div>
+          <div class="ic-body">Flipkart Marketplace Seller API v3.0 is fully documented and publicly available at seller.flipkart.com/api-docs. OAuth 2.0 authentication. REST endpoints available for orders, inventory, listings, returns.</div>
+        </div>
+        <div class="info-card ic-amber">
+          <div class="ic-label">ERPNext Connector</div>
+          <div class="ic-title">No Native Frappe App</div>
+          <div class="ic-body">There is no official ERPNext / Frappe Flipkart connector. Integration must be done via Unicommerce, Vinculum, or a custom-built Frappe App calling Flipkart REST endpoints directly.</div>
+        </div>
+        <div class="info-card ic-green">
+          <div class="ic-label">Recommended Path</div>
+          <div class="ic-title">Unicommerce Connector</div>
+          <div class="ic-body">Unicommerce (Uniware) is the most proven middleware for Flipkart ↔ ERPNext. Has native Flipkart API v3 support including inventory sync, order pull, and return management.</div>
+        </div>
+      </div>
+
+      <table class="cap-table">
+        <thead>
+          <tr>
+            <th class="cap-col-feat">Capability</th>
+            <th class="cap-col-avail">Available?</th>
+            <th class="cap-col-how">How It Works</th>
+            <th class="cap-col-limit">Limitation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cap-col-feat">Order Pull (Auto SO)</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>Flipkart API v3 has Order Search endpoint. Unicommerce polls it and pushes confirmed orders to ERPNext via their connector.</td>
+            <td>No real-time webhook from Flipkart to ERPNext directly. Unicommerce polling adds ~5–15 min delay.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Inventory Push</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>Flipkart API v3 has Inventory Update endpoint. Unicommerce / custom Frappe script pushes qty updates on stock ledger change.</td>
+            <td>Known Flipkart issue: even when qty=0 is sent successfully, Flipkart may still allow orders ("zero-stock orders"). Must be handled with Marketplace Cancelled logic.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Shipping Label / Invoice Print</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>Flipkart API returns label + invoice fetch endpoints. Label format (A4, A6, A7) configurable.</td>
+            <td>Label reprint needed if customer cancels mid-pack — system must handle partial order cancellation.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Return Sync</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>Return and cancellation status synced via API v3. Mapped to ERPNext Sales Return.</td>
+            <td>Unverified orders (on-hold) at Flipkart end require special handling — no SLA clock runs during on-hold.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Direct ERPNext Integration (no middleware)</td>
+            <td class="cap-col-avail"><span class="cross">✕</span></td>
+            <td>Not natively available. Would require building a custom Frappe App consuming Flipkart REST API.</td>
+            <td>Custom build = higher development cost and ongoing maintenance burden.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="workaround">
+        <div class="wt">⚙ Recommended Approach for Merlin</div>
+        <div class="wb">Use <strong>Unicommerce (Uniware)</strong> as the middleware layer. Unicommerce has pre-built Flipkart API v3 integration and an ERPNext connector. This avoids building a custom Frappe → Flipkart bridge from scratch. Alternatively, Vinculum (Vin E-Retail) is a proven alternative with similar Flipkart integration capability.</div>
+      </div>
+
+      <div class="cred-box">
+        <div class="cb-title">Credentials Required</div>
+        <div class="cred-row">
+          <span class="cred-chip required">Flipkart Seller ID</span>
+          <span class="cred-chip required">API Key</span>
+          <span class="cred-chip required">API Password</span>
+          <span class="cred-chip required">Location ID</span>
+          <span class="cred-chip required">Flipkart User ID</span>
+          <span class="cred-chip">App ID (Developer Portal)</span>
+          <span class="cred-chip">App Secret</span>
+        </div>
+        <div style="font-size:10px;color:#5a5448;margin-top:8px;">Action: Merlin to access Flipkart Seller API Developer Admin Portal → register app → share credentials with integration team.</div>
+      </div>
+    </section>
+    <hr class="divider"/>
+
+    <!-- ══ MEESHO ══ -->
+    <section class="api-section" id="api04">
+      <div class="api-header">
+        <span class="api-num">04</span>
+        <div class="api-title-block">
+          <div class="api-name">Meesho <em>Seller API</em></div>
+          <div class="api-desc">No Public Seller API · Private/Beta API via Approved Partners Only · Middleware Required</div>
+        </div>
+        <span class="status-pill sp-partial">~ Via Middleware Only</span>
+      </div>
+
+      <div class="info-row ir-2">
+        <div class="info-card ic-red">
+          <div class="ic-label">Public API Status</div>
+          <div class="ic-title">No Public API</div>
+          <div class="ic-body">Meesho does NOT offer a public/open API to sellers directly. There is no self-service API key or documentation available on the Meesho Seller Panel. Meesho's seller panel (supplier.meeshosupply.com) provides order, payment, and return management via UI only.</div>
+        </div>
+        <div class="info-card ic-amber">
+          <div class="ic-label">Partner API (Private)</div>
+          <div class="ic-title">Approved Partners Get Access</div>
+          <div class="ic-body">Meesho has a private/beta Seller API (V2) provided only to approved ERP/OMS partners — EasyEcom, Unicommerce, Vinculum. Sellers cannot get direct API keys. You must request via Meesho team or use an approved third-party integrator.</div>
+          <ul>
+            <li>Unicommerce: Meesho channel available, credentials via Meesho form</li>
+            <li>EasyEcom: Meesho API integration available</li>
+            <li>Vinculum: Meesho integration supported</li>
+          </ul>
+        </div>
+      </div>
+
+      <table class="cap-table">
+        <thead>
+          <tr>
+            <th class="cap-col-feat">Capability</th>
+            <th class="cap-col-avail">Available?</th>
+            <th class="cap-col-how">How It Works</th>
+            <th class="cap-col-limit">Limitation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cap-col-feat">Auto Order Sync</td>
+            <td class="cap-col-avail"><span class="partial">~</span></td>
+            <td>Via Unicommerce middleware only. Meesho pushes orders to Unicommerce; Unicommerce relays to ERPNext.</td>
+            <td>Manual order sync does not work. Only push-based orders from Meesho work. Failed orders cannot be re-fetched manually.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Inventory Push</td>
+            <td class="cap-col-avail"><span class="partial">~</span></td>
+            <td>Unicommerce "Facility Wise Inventory" config sends warehouse-level stock to Meesho.</td>
+            <td>Meesho known issue: zero-stock orders still placed. Marketplace Cancelled penalty not applied but creates noise.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Label / Invoice Fetch</td>
+            <td class="cap-col-avail"><span class="partial">~</span></td>
+            <td>Label format configurable: A6, A7, Label+Invoice. Fetched via Unicommerce → Meesho API.</td>
+            <td>Label format must be set correctly at channel config time; cannot change per order easily.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Return Sync</td>
+            <td class="cap-col-avail"><span class="partial">~</span></td>
+            <td>Return and cancellation statuses synced via Unicommerce. Mapped to ERPNext Sales Return.</td>
+            <td>Unverified/on-hold orders need special handling in Unicommerce — do not accept manually.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Direct ERPNext Integration</td>
+            <td class="cap-col-avail"><span class="cross">✕</span></td>
+            <td>Not possible. No public API. No Frappe app for Meesho exists.</td>
+            <td>Even if Meesho provides private API access, building a custom Frappe bridge is non-trivial and requires Meesho approval.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="limit-box">
+        <div class="lt">Critical Limitations — Meesho</div>
+        <ul>
+          <li>No public seller API — direct ERP integration is not possible today.</li>
+          <li>Seller must fill Meesho's partner onboarding form to get API credentials — even through Unicommerce.</li>
+          <li>Meesho API v2 required — older v1 connectors in some tools are deprecated.</li>
+          <li>No real-time tracking data from Meesho — shipping is handled by Meesho logistics internally.</li>
+        </ul>
+      </div>
+    </section>
+    <hr class="divider"/>
+
+    <!-- ══ ZEPTO ══ -->
+    <section class="api-section" id="api05">
+      <div class="api-header">
+        <span class="api-num">05</span>
+        <div class="api-title-block">
+          <div class="api-name">Zepto <em>(Quick Commerce)</em></div>
+          <div class="api-desc">No Public Seller Order API · PO via Email + Seller Portal · Custom Email Parser Workaround</div>
+        </div>
+        <span class="status-pill sp-noapi">✕ No Public API</span>
+      </div>
+
+      <div class="info-row ir-2">
+        <div class="info-card ic-red">
+          <div class="ic-label">Order API Status</div>
+          <div class="ic-title">No Seller Order API</div>
+          <div class="ic-body">Zepto does NOT provide a public seller API for order ingestion or inventory sync. Zepto's publicly documented APIs are payment-related only (Payments API, PayTo API, OAuth2 for payments — not for seller order management). Q-commerce seller operations are handled via Zepto's seller portal only.</div>
+        </div>
+        <div class="info-card ic-amber">
+          <div class="ic-label">How Zepto Sends Orders</div>
+          <div class="ic-title">Purchase Orders via Email</div>
+          <div class="ic-body">Zepto sends Purchase Orders (POs) to suppliers via email — PDF or structured text. Operations team must read, decode, and create Sale Orders in ERPNext manually, OR set up an email parser to automate this flow. Zepto also uses auto-forwarding for POs.</div>
+        </div>
+      </div>
+
+      <table class="cap-table">
+        <thead>
+          <tr>
+            <th class="cap-col-feat">Capability</th>
+            <th class="cap-col-avail">Available?</th>
+            <th class="cap-col-how">Workaround / Approach</th>
+            <th class="cap-col-limit">Limitation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cap-col-feat">Auto Order / PO Sync</td>
+            <td class="cap-col-avail"><span class="cross">✕</span></td>
+            <td>No API. Workaround: Email parser in ERPNext (Email → SO automation) reading Zepto PO email format. "PO received to SO created" can be cut from 47 min (manual) to ~90 seconds with email automation.</td>
+            <td>Email parsing is fragile. If Zepto changes PO format or email delivery fails, SO creation breaks. Gmail rule failures miss POs entirely.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Inventory Push (stock to Zepto)</td>
+            <td class="cap-col-avail"><span class="cross">✕</span></td>
+            <td>No API. Inventory update must be done manually via Zepto Seller Portal. No automated ERPNext → Zepto stock sync available.</td>
+            <td>Manual stock updates create lag. Zepto dark stores may deplete faster than portal updates. Risk of PO requests for out-of-stock items.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">SKU Mapping</td>
+            <td class="cap-col-avail"><span class="partial">~</span></td>
+            <td>Zepto uses its own Seller SKU codes. A cross-reference table must be built in ERPNext mapping Zepto SKU → Merlin internal SKU. One-time setup, 3–4 hours per platform.</td>
+            <td>Product variants (e.g. 200ml vs 500ml) need separate mapping rows. Missing variant mapping causes order failures.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">GST e-Invoice (mandatory)</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>ERPNext auto-generates GST e-invoice on SO confirmation. Required by Zepto before goods acceptance at dark store.</td>
+            <td>Must ensure GST, HSN codes, and tax rates are correctly configured in ERPNext Item master and Company settings.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="workaround">
+        <div class="wt">⚙ Recommended Approach for Merlin — Zepto</div>
+        <div class="wb">Since no public API exists, the recommended path is: (1) Dedicate a mailbox for Zepto POs (e.g. qcommerce@merlin.com), (2) Build a Frappe email parser that auto-reads Zepto PO email and creates a draft SO in ERPNext, (3) Maintain a Zepto SKU ↔ Merlin internal SKU mapping table, (4) Update inventory manually on Zepto portal for now, triggered by ERPNext stock reports. This is a Q2 Phase 3 item after core go-live.</div>
+      </div>
+    </section>
+    <hr class="divider"/>
+
+    <!-- ══ BLINKIT ══ -->
+    <section class="api-section" id="api06">
+      <div class="api-header">
+        <span class="api-num">06</span>
+        <div class="api-title-block">
+          <div class="api-name">Blinkit <em>(Quick Commerce)</em></div>
+          <div class="api-desc">No Public Seller Order API · PO via Email · Same Approach as Zepto</div>
+        </div>
+        <span class="status-pill sp-noapi">✕ No Public API</span>
+      </div>
+
+      <div class="info-row ir-2">
+        <div class="info-card ic-red">
+          <div class="ic-label">API Status</div>
+          <div class="ic-title">No Public Seller API</div>
+          <div class="ic-body">Blinkit (formerly Grofers, owned by Zomato) does not provide public API documentation for seller order management or inventory sync. Official public documentation is limited. Blinkit assigns its own internal item codes distinct from seller SKUs. No Frappe / ERPNext connector exists.</div>
+        </div>
+        <div class="info-card ic-amber">
+          <div class="ic-label">PO Model</div>
+          <div class="ic-title">Email-Based Purchase Orders</div>
+          <div class="ic-body">Blinkit sends Purchase Orders via email to the supplier. The operational model is: Blinkit dark store runs low → generates PO → emails supplier → supplier fulfills to dark store. POs must be fulfilled within tight SLAs. GST e-invoice mandatory before goods acceptance.</div>
+        </div>
+      </div>
+
+      <table class="cap-table">
+        <thead>
+          <tr>
+            <th class="cap-col-feat">Capability</th>
+            <th class="cap-col-avail">Available?</th>
+            <th class="cap-col-how">Workaround / Approach</th>
+            <th class="cap-col-limit">Limitation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cap-col-feat">Auto Order / PO Sync</td>
+            <td class="cap-col-avail"><span class="cross">✕</span></td>
+            <td>No API. Email parser workaround same as Zepto. Blinkit PO email → ERPNext email parser → draft SO. Must resolve SKU mapping (Blinkit code ↔ Merlin SKU).</td>
+            <td>Blinkit item codes are Blinkit-assigned and differ completely from Merlin's. Mapping table is mandatory setup before go-live.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Inventory Push</td>
+            <td class="cap-col-avail"><span class="cross">✕</span></td>
+            <td>Manual via Blinkit Seller Portal. No API. Stock report from ERPNext → manual portal update.</td>
+            <td>Manual updates create lag. Blinkit's demand forecasting generates POs regardless — mismatch can occur.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">GST e-Invoice (mandatory)</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>ERPNext India Compliance App generates IRN-based e-invoice. Required by Blinkit before goods acceptance at dark store. Must be auto-triggered on SO confirmation.</td>
+            <td>Turnover above ₹10 Cr mandatory. Merlin must have IRP access and valid GSTIN configured. e-invoice setup is a separate configuration task.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Quick Commerce Priority Fulfillment</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>ERPNext can configure routing rules to give Blinkit/Zepto SOs priority in pick list generation over D2C orders — custom Frappe logic.</td>
+            <td>Requires custom Automation Rule or Frappe script. Not out-of-box.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="limit-box">
+        <div class="lt">Critical Limitations — Blinkit & Zepto (Q-Commerce)</div>
+        <ul>
+          <li>No public seller API available for either platform — real-time order or inventory sync is technically not possible via API.</li>
+          <li>Both platforms send POs via email. Any automation must be email-parser-based, which carries reliability risk.</li>
+          <li>SKU code mismatch (Blinkit/Zepto internal codes vs. Merlin codes) is the #1 operational failure point reported by brands.</li>
+          <li>Inventory updates must be done manually in seller portals — automatic ERPNext → Q-commerce stock sync is not available today.</li>
+          <li>GST e-invoicing is mandatory for goods acceptance at dark stores — non-negotiable compliance setup needed before go-live.</li>
+        </ul>
+      </div>
+    </section>
+    <hr class="divider"/>
+
+    <!-- ══ CLICKPOST ══ -->
+    <section class="api-section" id="api07">
+      <div class="api-header">
+        <span class="api-num">07</span>
+        <div class="api-title-block">
+          <div class="api-name">Clickpost <em>Logistics Intelligence</em></div>
+          <div class="api-desc">Multi-Carrier Shipping API · Native ERPNext App on Frappe Cloud · Pincode Serviceability + Courier Recommendation + Tracking</div>
+        </div>
+        <span class="status-pill sp-available">✓ Available — Native ERPNext App</span>
+      </div>
+
+      <div class="info-row ir-3">
+        <div class="info-card ic-green">
+          <div class="ic-label">ERPNext Integration</div>
+          <div class="ic-title">Official Frappe Cloud App</div>
+          <div class="ic-body">ClickPost Logistics Intelligence app is available on Frappe Cloud Marketplace. Generates shipments from Delivery Notes, handles AWB registration, and provides unified tracking.</div>
+        </div>
+        <div class="info-card ic-green">
+          <div class="ic-label">Carrier Coverage</div>
+          <div class="ic-title">500+ Carriers via 1 API</div>
+          <div class="ic-body">Single Clickpost API integrates with 500+ courier partners globally. New carriers added within 24 hours. Covers all major Indian couriers: Blue Dart, Delhivery, Xpressbees, Ekart, etc.</div>
+        </div>
+        <div class="info-card ic-green">
+          <div class="ic-label">Pincode Logic</div>
+          <div class="ic-title">Built-in Serviceability API</div>
+          <div class="ic-body">Clickpost Serviceability, Cost & TAT API — checks pincode serviceability, shipping cost, and estimated delivery time across all carriers. This is the engine for auto logistics allocation in Merlin's flow.</div>
+        </div>
+      </div>
+
+      <table class="cap-table">
+        <thead>
+          <tr>
+            <th class="cap-col-feat">Capability</th>
+            <th class="cap-col-avail">Available?</th>
+            <th class="cap-col-how">How It Works for Merlin</th>
+            <th class="cap-col-limit">Limitation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cap-col-feat">Auto Courier Recommendation</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>Clickpost Recommendation Engine API — takes pickup pincode, drop pincode, weight, COD/prepaid, order type → returns ranked list of eligible courier partners. ERPNext auto-assigns top recommendation.</td>
+            <td>Business rules (prefer courier X for channel Y) must be configured in Clickpost dashboard — not auto-learned.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Pincode Serviceability Check</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>Serviceability API endpoint checks if drop pincode is serviced by any carrier. Returns pincode_serviceable = true/false + eligible carrier list.</td>
+            <td>Must be triggered at order acceptance, not just at DN creation, to catch unserviceable pincodes early.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">AWB Generation (Manifestation)</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>Manifestation API — creates order on courier partner, fetches AWB number. AWB auto-populated in ERPNext Delivery Note field.</td>
+            <td>Cancellation API available for RTOs. Must handle AWB cancellation on order cancellation in ERPNext.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Unified Shipment Tracking</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>Track Shipment API + webhook pushes — Pickup Scheduled → In Transit → Out for Delivery → Delivered / RTO. Status normalized to Merlin's labels via "delivery mask" mapping table in Clickpost.</td>
+            <td>Pull APIs on some carriers have delays up to 15–30 min. Critical milestones (Delivered) are reliable.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">RTO / Return Auto-Match</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>When Clickpost webhook fires "RTO Initiated", ERPNext can auto-create Sales Return against original Delivery Note. Custom Frappe script required to wire the webhook to Sales Return creation.</td>
+            <td>Auto-match requires AWB to be stored on Delivery Note and Returns DocType — must be configured.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Shipping Label Generation</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>Shipping Label API — generate or retrieve label from Manifestation request. Printable from ERPNext via Delivery Note print format.</td>
+            <td>Label format varies by carrier. Standard A4/A6 available; thermal label requires printer-specific setup.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">EPOD (Electronic Proof of Delivery)</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>Clickpost captures POD from carriers where available. For B2B, manual POD doc attachment in Delivery Note is still recommended alongside Clickpost EPOD.</td>
+            <td>Not all carriers provide digital POD. B2B must maintain manual signed receipt attachment as backup.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">COD Reconciliation</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>COD remittance data from carriers tracked via Clickpost. Invoice reconciliation for COD vs Prepaid orders manageable from unified dashboard.</td>
+            <td>Remittance timelines vary per carrier. ERPNext payment entry still needs to be created manually or via custom automation.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="avail-box">
+        <div class="at">✓ What This Unlocks for Merlin</div>
+        <ul>
+          <li>Single API replaces separate integration with each courier (Delhivery, Blue Dart, Xpressbees, etc.)</li>
+          <li>Pincode-based auto-courier selection replaces manual courier assignment — saves 5–10 min per order at scale</li>
+          <li>Delivery status masking means customers see "Out for Delivery" not courier-specific status codes</li>
+          <li>RTO webhook auto-matching cuts return processing time significantly</li>
+          <li>Pincode priority rules configurable: e.g. COD orders → prefer Delhivery, Prepaid → prefer Xpressbees for Zone 2</li>
+        </ul>
+      </div>
+
+      <div class="cred-box">
+        <div class="cb-title">Credentials Required</div>
+        <div class="cred-row">
+          <span class="cred-chip required">Clickpost Username</span>
+          <span class="cred-chip required">Clickpost API Key</span>
+          <span class="cred-chip required">Courier Partner Credentials (per carrier)</span>
+        </div>
+        <div style="font-size:10px;color:#5a5448;margin-top:8px;">Action: Merlin to create Clickpost account → add courier partner accounts → share API key with ERP team. Define delivery mask (courier status → Merlin standard label) in Clickpost dashboard.</div>
+      </div>
+    </section>
+    <hr class="divider"/>
+
+    <!-- ══ SHIPROCKET ══ -->
+    <section class="api-section" id="api08">
+      <div class="api-header">
+        <span class="api-num">08</span>
+        <div class="api-title-block">
+          <div class="api-name">Shiprocket <em>API</em></div>
+          <div class="api-desc">Alternative Logistics Aggregator · REST API · No Native ERPNext App · Can Integrate via Clickpost or Custom</div>
+        </div>
+        <span class="status-pill sp-partial">~ Via Custom / Clickpost</span>
+      </div>
+
+      <div class="info-row ir-2">
+        <div class="info-card ic-amber">
+          <div class="ic-label">Option</div>
+          <div class="ic-title">Shiprocket as Backup</div>
+          <div class="ic-body">Shiprocket is the leading logistics aggregator for Indian SME eCommerce. REST API available. Serves 19,000 pincodes. Can be used as a fallback or alternative to Clickpost for smaller volume channels. Clickpost actually integrates with Shiprocket — so carriers accessible via Shiprocket can still be routed through Clickpost.</div>
+        </div>
+        <div class="info-card ic-slate">
+          <div class="ic-label">Recommendation</div>
+          <div class="ic-title">Use Clickpost as Primary</div>
+          <div class="ic-body">For Merlin's scale and multi-channel requirement, Clickpost is the recommended primary logistics layer. Shiprocket can be used as a carrier on Clickpost (Clickpost has Shiprocket integration), giving access to Shiprocket's carrier network without maintaining a separate API connection. Avoids dual integration complexity.</div>
+        </div>
+      </div>
+    </section>
+    <hr class="divider"/>
+
+    <!-- ══ UNICOMMERCE ══ -->
+    <section class="api-section" id="api09">
+      <div class="api-header">
+        <span class="api-num">09</span>
+        <div class="api-title-block">
+          <div class="api-name">Unicommerce <em>(Middleware)</em></div>
+          <div class="api-desc">Multi-Channel OMS Middleware — ERPNext Connector + Flipkart + Meesho + Other Platforms</div>
+        </div>
+        <span class="status-pill sp-custom">⚙ Middleware Layer</span>
+      </div>
+
+      <div class="info-row ir-3">
+        <div class="info-card ic-blue">
+          <div class="ic-label">What It Does</div>
+          <div class="ic-title">Central OMS Hub</div>
+          <div class="ic-body">Unicommerce (Uniware) is an Order Management System that connects multiple eCommerce platforms to ERPNext. It acts as the middleware, pulling orders from all channels and pushing to ERPNext via their connector.</div>
+        </div>
+        <div class="info-card ic-blue">
+          <div class="ic-label">Channels Covered</div>
+          <div class="ic-title">Flipkart, Meesho + More</div>
+          <div class="ic-body">Unicommerce has pre-built connectors for: Flipkart (v3 API), Meesho (API v2), Amazon, Shopify, and others. This is the recommended path for Flipkart and Meesho in Merlin's project.</div>
+        </div>
+        <div class="info-card ic-amber">
+          <div class="ic-label">Cost Consideration</div>
+          <div class="ic-title">Additional Subscription</div>
+          <div class="ic-body">Unicommerce is a paid SaaS platform with per-order or monthly pricing. This adds cost on top of ERPNext. Must be evaluated against the cost of custom-building Flipkart / Meesho Frappe apps directly.</div>
+        </div>
+      </div>
+
+      <div class="avail-box">
+        <div class="at">✓ Channels via Unicommerce for Merlin</div>
+        <ul>
+          <li>Flipkart — Seller API v3 (orders, inventory, labels, returns)</li>
+          <li>Meesho — API v2 (orders pushed by Meesho, inventory sync, returns)</li>
+          <li>Amazon — can also route through Unicommerce if preferred over native Frappe app</li>
+          <li>Inventory sync: facility-wise (warehouse-level) inventory updates to each channel</li>
+        </ul>
+      </div>
+    </section>
+    <hr class="divider"/>
+
+    <!-- ══ FYND / KONNECT ══ -->
+    <section class="api-section" id="api10">
+      <div class="api-header">
+        <span class="api-num">10</span>
+        <div class="api-title-block">
+          <div class="api-name">Fynd Konnect <em>API</em></div>
+          <div class="api-desc">documentation.fynd.com/konnect/apis/konnect/orders — Fynd Commerce Platform Order API</div>
+        </div>
+        <span class="status-pill sp-partial">~ Evaluated — Not Recommended for Merlin</span>
+      </div>
+
+      <div class="info-row ir-2">
+        <div class="info-card ic-slate">
+          <div class="ic-label">What Fynd/Konnect Is</div>
+          <div class="ic-title">Commerce Platform, Not a Marketplace</div>
+          <div class="ic-body">Fynd (by Reliance Retail) is a unified commerce platform / OMS for brands. Konnect is their API layer for order management. It is primarily used by brands selling through Fynd's own ecosystem (Fynd Store, online-to-offline). It is NOT a connector to Amazon/Flipkart/Meesho/Zepto/Blinkit. The Orders API documented at the URL provided is for Fynd's own order flow — not a marketplace aggregator.</div>
+        </div>
+        <div class="info-card ic-red">
+          <div class="ic-label">Relevance to Merlin</div>
+          <div class="ic-title">Low Relevance — Not Required</div>
+          <div class="ic-body">Unless Merlin plans to sell via Fynd's own D2C platform or physical store network, the Fynd Konnect Orders API is not applicable to this ERPNext integration project. For the channels in Merlin's flow (Amazon, Flipkart, Shopify, Meesho, Zepto, Blinkit), Fynd Konnect provides no integration. Recommend deprioritizing this connector for the current scope.</div>
+        </div>
+      </div>
+
+      <div class="workaround">
+        <div class="wt">Assessment of Fynd Konnect for Merlin</div>
+        <div class="wb">The Fynd Konnect API was researched as part of this report. Based on the documentation at documentation.fynd.com/konnect/apis, it is a platform-specific order management API for brands using Fynd's commerce infrastructure — not a multi-channel aggregator for Amazon/Flipkart/Meesho. For Merlin's current channel mix, Fynd Konnect is not recommended and should not be included in Phase 1 or Phase 2 integration scope. If Merlin decides to onboard Fynd as a sales channel in future, this API would become relevant.</div>
+      </div>
+    </section>
+    <hr class="divider"/>
+
+    <!-- ══ PINCODE ROUTING ══ -->
+    <section class="api-section" id="api11">
+      <div class="api-header">
+        <span class="api-num">11</span>
+        <div class="api-title-block">
+          <div class="api-name">Pincode → Warehouse <em>Auto-Routing</em></div>
+          <div class="api-desc">No Out-of-Box ERPNext Feature · Custom Frappe Script Required · Clickpost Serviceability API Used</div>
+        </div>
+        <span class="status-pill sp-custom">⚙ Custom Build Required</span>
+      </div>
+
+      <div class="info-row ir-2">
+        <div class="info-card ic-blue">
+          <div class="ic-label">What's Needed</div>
+          <div class="ic-title">Pincode → Zone → WH Mapping</div>
+          <div class="ic-body">On SO submission, the customer delivery pincode must be extracted, matched to a Zone, and the nearest warehouse with available stock auto-assigned. This requires a custom Frappe Automation Rule or Server Script with a Pincode → Zone → WH mapping table maintained as a Custom DocType in ERPNext.</div>
+        </div>
+        <div class="info-card ic-teal">
+          <div class="ic-label">How to Build</div>
+          <div class="ic-title">ERPNext Custom Script + Clickpost</div>
+          <div class="ic-body">Step 1: Custom DocType "Pincode Zone Map" (pincode, zone, primary WH, fallback WH). Step 2: Frappe Server Script on SO submit — reads delivery pincode, queries map, assigns WH. Step 3: Call Clickpost Serviceability API to confirm carrier availability at that pincode before WH assignment is finalized.</div>
+        </div>
+      </div>
+
+      <table class="cap-table">
+        <thead>
+          <tr>
+            <th class="cap-col-feat">Logic Rule</th>
+            <th class="cap-col-avail">Buildable?</th>
+            <th class="cap-col-how">Implementation</th>
+            <th class="cap-col-limit">Consideration</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cap-col-feat">Nearest WH by Pincode</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>Pincode Zone Map DocType → lookup on SO save → auto-assign Warehouse field.</td>
+            <td>Map must be maintained by ops team. ~6,000 serviceable pincodes in India — manageable as CSV upload.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Fallback if WH = 0 stock</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>Script checks stock in primary WH → if &lt; order qty, assigns fallback WH from map.</td>
+            <td>Multi-WH split fulfillment (partial from WH1, rest from WH2) is complex — recommend avoid for now, fulfill from single WH.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Q-Commerce → Dark Store First</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>Channel tag on SO → if channel = Zepto/Blinkit → always assign Dark Store WH regardless of pincode map.</td>
+            <td>Dark store WH replenishment must be tracked separately — standard WH reports apply.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">Carrier Serviceability Check</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>Clickpost Serviceability API called on SO confirmation with pickup pincode (WH) + drop pincode (customer). Returns eligible carriers.</td>
+            <td>Adds API call latency (~200–500ms) to SO submission. Must handle API timeout gracefully.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+    <hr class="divider"/>
+
+    <!-- ══ LIVE INVENTORY PUSH ══ -->
+    <section class="api-section" id="api12">
+      <div class="api-header">
+        <span class="api-num">12</span>
+        <div class="api-title-block">
+          <div class="api-name">Live Inventory Push <em>to All Platforms</em></div>
+          <div class="api-desc">Frappe Webhook / Scheduler → Platform Inventory APIs · Custom Per-Channel Implementation</div>
+        </div>
+        <span class="status-pill sp-custom">⚙ Custom Frappe Build</span>
+      </div>
+
+      <table class="cap-table">
+        <thead>
+          <tr>
+            <th class="cap-col-feat">Platform</th>
+            <th class="cap-col-avail">API Available?</th>
+            <th class="cap-col-how">Push Method</th>
+            <th class="cap-col-limit">Rate Limit / Note</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="cap-col-feat">⚡ Amazon</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>SP-API Inventory Feed. Frappe Scheduler pushes qty updates. Available via ecommerce_integrations app.</td>
+            <td>SP-API rate limits. FBA inventory managed by Amazon — only FBM inventory is pushable.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">🟢 Shopify</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>Shopify Inventory Levels API. On stock ledger update → webhook fires → Shopify updated. Near real-time.</td>
+            <td>Standard: 2 req/sec. Shopify Plus: 4 req/sec. High-volume updates may queue.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">🛍️ Flipkart</td>
+            <td class="cap-col-avail"><span class="tick">✓</span></td>
+            <td>Flipkart Inventory Update API v3 via Unicommerce. Facility-wise inventory push to Flipkart listing.</td>
+            <td>Zero-stock bug at Flipkart — orders may still come in after 0 is sent. Handle as Marketplace Cancelled.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">🏪 Meesho</td>
+            <td class="cap-col-avail"><span class="partial">~</span></td>
+            <td>Via Unicommerce only. "Accept by Inventory" mode — Unicommerce accepts/rejects orders based on stock.</td>
+            <td>No direct ERPNext → Meesho inventory push without Unicommerce middleware.</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">⚡ Zepto</td>
+            <td class="cap-col-avail"><span class="cross">✕</span></td>
+            <td>No API. Manual portal update only. ERPNext stock report used as reference for manual update.</td>
+            <td>No automation possible. Must establish manual update SOP (e.g. daily 9am stock update on Zepto portal).</td>
+          </tr>
+          <tr>
+            <td class="cap-col-feat">💛 Blinkit</td>
+            <td class="cap-col-avail"><span class="cross">✕</span></td>
+            <td>No API. Manual portal update only. Same as Zepto — ERPNext generates stock report, ops team updates portal.</td>
+            <td>Blinkit's demand forecasting may generate POs for items even with updated stock. Monitor closely.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="info-row ir-2">
+        <div class="info-card ic-blue">
+          <div class="ic-label">Frappe Implementation</div>
+          <div class="ic-title">Scheduler + Webhook Pattern</div>
+          <div class="ic-body">ERPNext Frappe Scheduler fires on stock ledger update (on_submit hook on Stock Entry / Delivery Note) → calls platform inventory APIs in sequence. For high-frequency stock updates, a 15-minute scheduled job is more stable than real-time per-transaction calls to avoid rate limit hits.</div>
+        </div>
+        <div class="info-card ic-amber">
+          <div class="ic-label">Safety Stock Buffer</div>
+          <div class="ic-title">Per-Channel Threshold Config</div>
+          <div class="ic-body">Each platform should receive: Available Qty = ERPNext Stock − Reserved Qty − Safety Stock Buffer. Buffer prevents overselling when multiple channels sell simultaneously. Buffer values must be defined by Merlin ops team per channel and set in the integration config.</div>
+        </div>
+      </div>
+    </section>
+    <hr class="divider"/>
+
+    <!-- ══ SUMMARY MATRIX ══ -->
+    <section class="api-section" id="summary">
+      <div class="api-header">
+        <span class="api-num">—</span>
+        <div class="api-title-block">
+          <div class="api-name">API Availability <em>Summary Matrix</em></div>
+          <div class="api-desc">All channels · All integration requirements · At a glance</div>
+        </div>
+      </div>
+
+      <table class="summary-table">
+        <thead>
+          <tr>
+            <th>Channel / Tool</th>
+            <th>Auto Order Sync (SO)</th>
+            <th>Live Inventory Push</th>
+            <th>Auto Logistics Allocation</th>
+            <th>ERPNext Connector</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>⚡ Amazon</strong></td>
+            <td><span class="tick">✓</span> SP-API via Frappe App</td>
+            <td><span class="tick">✓</span> SP-API Inventory Feed</td>
+            <td><span class="tick">✓</span> Via Clickpost</td>
+            <td><span style="color:var(--green)">Native (ecommerce_integrations)</span></td>
+            <td><span class="status-pill sp-available" style="font-size:9px;padding:3px 8px;">✓ Ready</span></td>
+          </tr>
+          <tr>
+            <td><strong>🟢 Shopify</strong></td>
+            <td><span class="tick">✓</span> Webhook → SO</td>
+            <td><span class="tick">✓</span> Inventory Levels API</td>
+            <td><span class="tick">✓</span> Via Clickpost</td>
+            <td><span style="color:var(--green)">Native (ecommerce_integrations)</span></td>
+            <td><span class="status-pill sp-available" style="font-size:9px;padding:3px 8px;">✓ Ready</span></td>
+          </tr>
+          <tr>
+            <td><strong>🛍️ Flipkart</strong></td>
+            <td><span class="partial">~</span> Via Unicommerce</td>
+            <td><span class="partial">~</span> Via Unicommerce</td>
+            <td><span class="tick">✓</span> Via Clickpost</td>
+            <td><span style="color:var(--amber)">No native app — Unicommerce required</span></td>
+            <td><span class="status-pill sp-partial" style="font-size:9px;padding:3px 8px;">~ Middleware</span></td>
+          </tr>
+          <tr>
+            <td><strong>🏪 Meesho</strong></td>
+            <td><span class="partial">~</span> Via Unicommerce (partner API)</td>
+            <td><span class="partial">~</span> Via Unicommerce</td>
+            <td><span class="tick">✓</span> Via Clickpost</td>
+            <td><span style="color:var(--amber)">No public API — partner access only</span></td>
+            <td><span class="status-pill sp-partial" style="font-size:9px;padding:3px 8px;">~ Middleware</span></td>
+          </tr>
+          <tr>
+            <td><strong>⚡ Zepto</strong></td>
+            <td><span class="cross">✕</span> Email parser only</td>
+            <td><span class="cross">✕</span> Manual portal only</td>
+            <td>N/A (dark store replenishment)</td>
+            <td><span style="color:var(--red)">No public seller API exists</span></td>
+            <td><span class="status-pill sp-noapi" style="font-size:9px;padding:3px 8px;">✕ No API</span></td>
+          </tr>
+          <tr>
+            <td><strong>💛 Blinkit</strong></td>
+            <td><span class="cross">✕</span> Email parser only</td>
+            <td><span class="cross">✕</span> Manual portal only</td>
+            <td>N/A (dark store replenishment)</td>
+            <td><span style="color:var(--red)">No public seller API exists</span></td>
+            <td><span class="status-pill sp-noapi" style="font-size:9px;padding:3px 8px;">✕ No API</span></td>
+          </tr>
+          <tr>
+            <td><strong>🚚 Clickpost</strong></td>
+            <td>N/A</td>
+            <td>N/A</td>
+            <td><span class="tick">✓</span> Recommendation + Serviceability + AWB + Tracking APIs</td>
+            <td><span style="color:var(--green)">Native Frappe Cloud app + REST API</span></td>
+            <td><span class="status-pill sp-available" style="font-size:9px;padding:3px 8px;">✓ Ready</span></td>
+          </tr>
+          <tr>
+            <td><strong>🗺️ Pincode → WH Routing</strong></td>
+            <td>N/A</td>
+            <td>N/A</td>
+            <td><span class="tick">✓</span> Custom Frappe Script</td>
+            <td><span style="color:var(--blue)">Custom DocType + Server Script build</span></td>
+            <td><span class="status-pill sp-custom" style="font-size:9px;padding:3px 8px;">⚙ Custom Build</span></td>
+          </tr>
+          <tr>
+            <td><strong>📦 Fynd Konnect</strong></td>
+            <td><span class="cross">✕</span> Not applicable</td>
+            <td><span class="cross">✕</span> Not applicable</td>
+            <td><span class="cross">✕</span> Not applicable</td>
+            <td><span style="color:var(--muted)">Not relevant to Merlin's current channel mix</span></td>
+            <td><span class="status-pill sp-noapi" style="font-size:9px;padding:3px 8px;">Deprioritize</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- ACTION ITEMS -->
+      <div style="margin-top:32px;">
+        <div style="font-family:'Instrument Serif',serif;font-size:22px;color:var(--ink);margin-bottom:16px;">Pending <em>Actions from Merlin</em></div>
+        <div class="info-row ir-2">
+          <div class="info-card ic-coral">
+            <div class="ic-label">🔴 Urgent — Before Phase 2 Integration Start</div>
+            <div class="ic-title">Credentials to Share</div>
+            <ul>
+              <li>Amazon SP-API: IAM ARN, Refresh Token, Client ID, Client Secret, AWS Keys, Marketplace</li>
+              <li>Shopify: Store URL, API Key, API Password, Webhook Secret</li>
+              <li>Flipkart Seller Portal: Seller ID, API Key, API Password, Location ID</li>
+              <li>Meesho: Fill Meesho partner onboarding form → get Merchant ID, Supplier Identifier, Secret</li>
+              <li>Clickpost: Create account → share API key and username</li>
+              <li>Zepto: Share dedicated PO inbox email + Zepto SKU ↔ Merlin SKU mapping sheet</li>
+              <li>Blinkit: Share dedicated PO inbox email + Blinkit item code ↔ Merlin SKU mapping sheet</li>
+            </ul>
+          </div>
+          <div class="info-card ic-amber">
+            <div class="ic-label">🟡 Configuration Inputs Needed</div>
+            <div class="ic-title">Business Rules to Define</div>
+            <ul>
+              <li>Safety stock buffer per channel (Amazon, Shopify, Flipkart, Meesho)</li>
+              <li>Zero-stock auto-deactivation threshold per platform (default: 0)</li>
+              <li>Pincode → Zone → Warehouse mapping table (CSV upload)</li>
+              <li>Channel → preferred courier priority rules for Clickpost</li>
+              <li>COD vs Prepaid courier preference per zone</li>
+              <li>Delivery status label names for customer-facing communication (Clickpost mask)</li>
+              <li>Complete list of physical warehouses: city, type, channel mapping</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- FOOTER -->
+<footer class="page-footer">
+  <div class="footer-brand">Merlin<em>.</em></div>
+  <div class="footer-meta">API Integration Report v1.0 · ERPNext v16 · Frappe Framework · 16 May 2025 · Confidential</div>
+</footer>
+
+<script>
+const sections = document.querySelectorAll('.api-section');
+const sidebarLinks = document.querySelectorAll('.sb-item');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      sidebarLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === '#' + id) link.classList.add('active');
+      });
+    }
+  });
+}, { threshold: 0.2, rootMargin: '-60px 0px -50% 0px' });
+sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
